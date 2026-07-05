@@ -1,0 +1,10 @@
+__pycache__/
+*.pyc
+
+build/
+dist/
+*.spec
+
+inzone_battery.txt
+inzone_battery_status.txt
+inzone_tray_error.log
