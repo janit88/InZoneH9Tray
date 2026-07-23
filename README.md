@@ -1,5 +1,10 @@
 # InzoneH9Tray
 
+# Sony INZONE H9 / H7 Battery Tray Indicator for Windows
+
+InZoneH9Tray is a lightweight Windows system tray application that displays
+the battery level and charging status of Sony INZONE H9 and INZONE H7 headsets.
+
 InzoneH9Tray — небольшая программа для Windows, которая показывает уровень заряда наушников Sony INZONE H9 / INZONE H7 в системном трее.
 
 Программа читает заряд напрямую через USB/COM-интерфейс донгла Sony и не требует открытого окна INZONE Hub.
