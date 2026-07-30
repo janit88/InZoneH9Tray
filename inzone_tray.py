@@ -41,14 +41,14 @@ tray_icon: pystray.Icon | None = None
 
 def find_inzone_port() -> str | None:
     """
-    Ищем COM-порт INZONE H9/H7.
+    Find the INZONE H9/H7 COM port.
 
-    На твоём ПК это было:
+    On the original development PC, it was:
     USB\\VID_054C&PID_0E53&MI_06...
     COM3
 
-    Но на другом ПК COM-порт может быть COM4, COM5, COM12 и т.д.
-    Поэтому ищем по VID/PID, а не по номеру COM.
+    On another PC, the COM port may be COM4, COM5, COM12, and so on.
+    Therefore, search by VID/PID instead of a specific COM port number.
     """
 
     candidates = []
@@ -56,32 +56,32 @@ def find_inzone_port() -> str | None:
     for port in list_ports.comports():
         text = f"{port.device} {port.description} {port.hwid}".upper()
 
-        # Вариант формата pyserial:
+        # pyserial format:
         # USB VID:PID=054C:0E53
         if f"VID:PID={VID}:{PID}" in text:
             candidates.append(port)
             continue
 
-        # Вариант формата Windows PNPDeviceID:
+        # Windows PNPDeviceID format:
         # USB\VID_054C&PID_0E53&MI_06...
         if f"VID_{VID}" in text and f"PID_{PID}" in text:
             candidates.append(port)
             continue
 
-        # Запасной мягкий вариант
+        # Fallback: loosely match both identifiers
         if VID in text and PID in text:
             candidates.append(port)
             continue
 
-    # Сначала предпочитаем именно интерфейс MI_06,
-    # потому что у тебя COM-порт был на MI_06.
+    # Prefer the MI_06 interface first,
+    # because the COM port was exposed through MI_06 during testing.
     for port in candidates:
         text = f"{port.device} {port.description} {port.hwid}".upper()
 
         if "MI_06" in text:
             return port.device
 
-    # Если MI_06 не отображается, берём первый найденный порт с VID/PID.
+    # If MI_06 is not shown, use the first port matching the VID/PID.
     if candidates:
         return candidates[0].device
 
@@ -130,7 +130,7 @@ def read_inzone_battery() -> BatteryState:
     if not port:
         return BatteryState(
             status="not_found",
-            error="INZONE COM-порт не найден"
+            error="INZONE COM port not found"
         )
 
     try:
@@ -165,7 +165,7 @@ def read_inzone_battery() -> BatteryState:
                 return BatteryState(
                     status="bad_response",
                     port=port,
-                    error="Кадр батареи не найден"
+                    error="Battery response frame not found"
                 )
 
             charging_byte = frame[11]
@@ -183,21 +183,22 @@ def read_inzone_battery() -> BatteryState:
         return BatteryState(
             status="busy",
             port=port,
-            error="COM-порт занят. Скорее всего открыт INZONE Hub"
+            error="COM port is busy. INZONE Hub is probably running"
         )
 
     except serial.SerialException as e:
         message = str(e)
 
         if (
-            "PermissionError" in message
+            getattr(e, "errno", None) in (5, 13)
+            or getattr(e, "winerror", None) == 5
+            or "PermissionError" in message
             or "Access is denied" in message
-            or "Отказано в доступе" in message
         ):
             return BatteryState(
                 status="busy",
                 port=port,
-                error="COM-порт занят. Скорее всего открыт INZONE Hub"
+                error="COM port is busy. INZONE Hub is probably running"
             )
 
         return BatteryState(
@@ -316,12 +317,12 @@ def make_title(current_state: BatteryState) -> str:
         return f"INZONE H9: {current_state.battery}%{charging_text}{port_text} | {current_state.last_update}"
 
     if current_state.status == "busy":
-        return f"INZONE H9: COM-порт занят INZONE Hub ({current_state.port})"
+        return f"INZONE H9: COM port is in use by INZONE Hub ({current_state.port})"
 
     if current_state.status == "not_found":
-        return "INZONE H9: устройство не найдено"
+        return "INZONE H9: device not found"
 
-    return f"INZONE H9: ошибка — {current_state.error}"
+    return f"INZONE H9: error — {current_state.error}"
 
 
 def save_status_file(current_state: BatteryState) -> None:
@@ -385,16 +386,16 @@ def get_menu_text():
 def main():
     global tray_icon
 
-    initial_state = BatteryState(status="init", error="Инициализация")
+    initial_state = BatteryState(status="init", error="Initializing")
 
     tray_icon = pystray.Icon(
         "INZONE H9 Battery",
         make_icon_image(initial_state),
-        "INZONE H9: запуск...",
+        "INZONE H9: starting...",
         menu=pystray.Menu(
             item(lambda text: get_menu_text(), None, enabled=False),
-            item("Обновить сейчас", on_refresh),
-            item("Выход", on_exit)
+            item("Refresh now", on_refresh),
+            item("Exit", on_exit)
         )
     )
 
