@@ -1,92 +1,112 @@
 # InzoneH9Tray
 
-# Sony INZONE H9 / H7 Battery Tray Indicator for Windows
+**English** | [Русский](README.ru.md)
 
-InZoneH9Tray is a lightweight Windows system tray application that displays
-the battery level and charging status of Sony INZONE H9 and INZONE H7 headsets.
+## Sony INZONE H9 / H7 Battery Tray Indicator for Windows
 
-InzoneH9Tray — небольшая программа для Windows, которая показывает уровень заряда наушников Sony INZONE H9 / INZONE H7 в системном трее.
+InzoneH9Tray is a lightweight Windows system tray application that displays the battery level and charging status of Sony INZONE H9 and INZONE H7 headsets.
 
-Программа читает заряд напрямую через USB/COM-интерфейс донгла Sony и не требует открытого окна INZONE Hub.
+The application reads the battery status directly through the USB/COM interface of the Sony wireless dongle and does not require the INZONE Hub window to remain open.
 
-## Возможности
+## Features
 
-- Показывает заряд наушников в системном трее Windows.
-- Показывает состояние зарядки.
-- Автоматически находит COM-порт по `VID_054C&PID_0E53`.
-- Не привязана к конкретному номеру COM-порта.
-- Пишет текущий статус в текстовые файлы рядом с программой.
-- Показывает `BUSY`, если INZONE Hub запущен и занял COM-порт.
+* Displays the headset battery level in the Windows system tray.
+* Displays the charging status.
+* Automatically detects the COM port using `VID_054C&PID_0E53`.
+* Does not depend on a fixed COM port number.
+* Writes the current status to text files next to the application.
+* Displays `BUSY` when INZONE Hub is running and has occupied the COM port.
 
-## Поддерживаемые устройства
+## Supported Devices
 
-Проверено на:
+Tested with:
 
-- Sony INZONE H9
+* Sony INZONE H9
 
-Вероятно, также работает с:
+Expected to also work with:
 
-- Sony INZONE H7
+* Sony INZONE H7
 
-Оба устройства определяются как:
+Both devices use the following hardware identifier:
 
-`VID_054C&PID_0E53`
+```text
+VID_054C&PID_0E53
+```
 
-## Ограничение
+Support for the Sony INZONE H7 has not yet been confirmed by direct testing.
 
-INZONE Hub и InzoneH9Tray используют один и тот же COM-интерфейс устройства.  
-Если INZONE Hub запущен, он занимает COM-порт, и InzoneH9Tray не может прочитать заряд. В этом случае иконка показывает:
+## Limitation
 
-`BUSY`
+INZONE Hub and InzoneH9Tray use the same COM interface of the wireless dongle.
 
-Для постоянного отображения заряда INZONE Hub необходимо закрыть, включая значок в трее.
+When INZONE Hub is running, it occupies the COM port and InzoneH9Tray cannot read the battery level. In this case, the tray icon displays:
 
-## Установка готовой версии
+```text
+BUSY
+```
 
-Скачайте InzoneH9Tray.exe из раздела Releases.  
-Запустите файл.  
-Значок появится в системном трее Windows.  
-Если Windows скрыла значок, нажмите стрелку ^ в трее и перетащите его на видимую часть панели.  
+For continuous battery monitoring, close INZONE Hub completely, including its system tray icon.
 
-## Автозапуск вместе с Windows  
+## Installing the Prebuilt Version
 
-Нажмите Win + R.  
-Введите:
-`shell:startup`  
-Поместите в открывшуюся папку ярлык на InzoneH9Tray.exe.  
+1. Download `InzoneH9Tray.exe` from the repository's **Releases** page.
+2. Run the downloaded file.
+3. The application icon will appear in the Windows system tray.
+4. If Windows hides the icon, click the `^` arrow and drag the icon to the visible part of the tray.
 
-## Сборка из исходного кода
+## Starting with Windows
 
-Установите зависимости:
+1. Press `Win + R`.
+2. Enter:
 
-`py -m pip install --upgrade pyserial pystray pillow pyinstaller`
+```text
+shell:startup
+```
 
-Соберите exe:
+3. Place a shortcut to `InzoneH9Tray.exe` in the opened folder.
 
-`py -m PyInstaller --onefile --noconsole --clean --name InzoneH9Tray --hidden-import=pystray._win32 inzone_tray.py`
+## Building from Source
 
-Готовый файл будет находиться в папке:
+Install the required dependencies:
 
-`dist\InzoneH9Tray.exe`
+```powershell
+py -m pip install --upgrade pyserial pystray pillow pyinstaller
+```
 
-## Файлы статуса
+Build the executable:
 
-Программа создаёт рядом с собой файлы:
+```powershell
+py -m PyInstaller --onefile --noconsole --clean --name InzoneH9Tray --hidden-import=pystray._win32 inzone_tray.py
+```
 
-`inzone_battery.txt`  
-`inzone_battery_status.txt`  
-`inzone_tray_error.log`
+The resulting executable will be located at:
 
-Они нужны для диагностики и возможной интеграции с другими виджетами.
+```text
+dist\InzoneH9Tray.exe
+```
 
-### Статусы иконки
+## Status Files
 
-**70**    — текущий заряд  
-**20**    — низкий заряд  
-**BUSY**  — COM-порт занят INZONE Hub  
-**NO**    — устройство не найдено  
-**?**     — ошибка чтения
+The application creates the following files next to the executable:
 
-## Лицензия
+```text
+inzone_battery.txt
+inzone_battery_status.txt
+inzone_tray_error.log
+```
 
-Проект распространяется без гарантий. Используйте на свой риск.
+These files can be used for diagnostics and integration with other applications or desktop widgets.
+
+## Tray Icon Statuses
+
+| Icon   | Meaning                            |
+| ------ | ---------------------------------- |
+| `70`   | Current battery level              |
+| `20`   | Low battery level                  |
+| `BUSY` | COM port is occupied by INZONE Hub |
+| `NO`   | Headset or dongle was not found    |
+| `?`    | Battery reading error              |
+
+## License
+
+This project is licensed under the [MIT License](LICENSE).
